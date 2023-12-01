@@ -1,32 +1,23 @@
 import java.io.File
 
-fun sumIntOfFirstAndLastDigitsOnEachLine(file: File, includingTextDigits: Boolean): Int {
+fun sumIntOfFirstAndLastDigitsOnEachLine(file: File, includeTextNumbers: Boolean): Int {
     val input = file.readLines()
     return input.sumOf { line ->
-        val parsedInput = if (includingTextDigits) line.parseStringDigits() else line
-        println((parsedInput.first { it.isDigit() }.toString() + parsedInput.last { it.isDigit() }.toString()).toInt())
-        println("-")
+        val parsedInput = if (includeTextNumbers) line.convertSpelledDigitsToDigits() else line
         (parsedInput.first { it.isDigit() }.toString() + parsedInput.last { it.isDigit() }.toString()).toInt()
     }
 }
 
-fun String.parseStringDigits(): String {
-    var newString = ""
-    var pointer = 0
-    while (pointer < this.length) {
-        val remainingString = this.substring(pointer)
-        val matchingDigitString = stringToDigit.keys.firstOrNull { remainingString.startsWith(it) }
-        if (matchingDigitString != null) {
-            newString += stringToDigit[matchingDigitString]
-        } else {
-            newString += this[pointer]
-        }
-        pointer++
+fun String.convertSpelledDigitsToDigits(): String = this.mapIndexed { index, _ ->
+    val spelledDigit = spelledDigitsToDigits.keys.firstOrNull { this.substring(index).startsWith(it) }
+    if (spelledDigit != null) {
+        spelledDigitsToDigits[spelledDigit] ?: throw Exception("Digit string not found")
+    } else {
+        this[index].toString()
     }
-    return newString
-}
+}.joinToString()
 
-val stringToDigit = mapOf(
+val spelledDigitsToDigits = mapOf(
     "one" to "1",
     "two" to "2",
     "three" to "3",
