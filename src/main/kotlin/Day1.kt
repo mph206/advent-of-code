@@ -1,21 +1,19 @@
 import java.io.File
 
-fun sumIntOfFirstAndLastDigitsOnEachLine(file: File, includeTextNumbers: Boolean): Int {
-    val input = file.readLines()
-    return input.sumOf { line ->
-        val parsedInput = if (includeTextNumbers) line.convertSpelledDigitsToDigits() else line
-        (parsedInput.first { it.isDigit() }.toString() + parsedInput.last { it.isDigit() }.toString()).toInt()
+fun sumIntOfFirstAndLastDigitsOnEachLine(file: File, includeTextNumbers: Boolean): Int =
+    file.readLines().sumOf { line ->
+        val parsedInput = if (includeTextNumbers) line.extractDigitsFromString() else line.filter { it.isDigit() }
+        (parsedInput.first().toString() + parsedInput.last().toString()).toInt()
     }
-}
 
-fun String.convertSpelledDigitsToDigits(): String = this.mapIndexed { index, _ ->
+fun String.extractDigitsFromString(): String = this.mapIndexed { index, _ ->
     val spelledDigit = spelledDigitsToDigits.keys.firstOrNull { this.substring(index).startsWith(it) }
-    if (spelledDigit != null) {
-        spelledDigitsToDigits[spelledDigit] ?: throw Exception("Digit string not found")
-    } else {
-        this[index].toString()
+    when {
+        spelledDigit != null -> spelledDigitsToDigits[spelledDigit] ?: throw Exception("Digit string not found")
+        this[index].isDigit() -> this[index]
+        else -> null
     }
-}.joinToString()
+}.filterNotNull().joinToString()
 
 val spelledDigitsToDigits = mapOf(
     "one" to "1",
