@@ -9,7 +9,7 @@ class Day2Test {
     }
 
     @Test
-    fun `part 2`() {
+    fun `Sums powers of each game's max cubes for each colour`() {
         assertEquals(2286, sumPowersOfMaxColourCubesPerGame(File("src/test/resources/day_2_test_input.txt")))
     }
 }

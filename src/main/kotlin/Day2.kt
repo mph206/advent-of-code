@@ -19,43 +19,32 @@ private fun findValidGames(maxColours: Map<Int, Map<Colour, Int>>): Map<Int, Boo
     return validGames.filter { !it.value }
 }
 
-private fun findMaxColourCubesPerGame(input: List<String>): Map<Int, Map<Colour, Int>> {
-    return input.associate { line ->
-        val gameNumber = line.split("Game ", ":")[1].toInt()
-        val colourCounts = line.split(": ", "; ", ", ", " ").run { this.subList(2, this.size)}
-        val maxColourCount = mutableMapOf(
-            Colour.Red to 0,
-            Colour.Green to 0,
-            Colour.Blue to 0
-        )
+private fun findMaxColourCubesPerGame(input: List<String>): Map<Int, Map<Colour, Int>> = input.associate { line ->
+    val gameNumber = line.split("Game ", ":")[1].toInt()
+    val colourCounts = line.split(": ", "; ", ", ", " ").run { this.subList(2, this.size) }
 
-        colourCounts.forEachIndexed { idx, string ->
-            val int = string.toIntOrNull()
-            if (int != null) {
-                val colour = colourCounts[idx + 1].toColour()
-                if (int > maxColourCount[colour]!!) maxColourCount[colour] = int
-            }
+    val maxColourCount = colourCounts.withIndex().fold(mutableMapOf(
+        Colour.RED to 0,
+        Colour.GREEN to 0,
+        Colour.BLUE to 0
+    )) { accumulator, indexedColourOrCount ->
+        val int = indexedColourOrCount.value.toIntOrNull() ?: return@fold accumulator
+        val colour = Colour.valueOf(colourCounts[indexedColourOrCount.index + 1].uppercase())
+        if (int > accumulator[colour]!!) {
+            accumulator[colour] = int
         }
-        gameNumber to maxColourCount
+        accumulator
     }
+    gameNumber to maxColourCount
 }
 
 val availableCubesPerColour = mapOf(
-    Colour.Red to 12,
-    Colour.Green to 13,
-    Colour.Blue to 14
+    Colour.RED to 12,
+    Colour.GREEN to 13,
+    Colour.BLUE to 14
 )
 
-enum class Colour {
-    Red, Green, Blue;
-}
-
-private fun String.toColour() = when (this) {
-    "red" -> Colour.Red
-    "green" -> Colour.Green
-    "blue" -> Colour.Blue
-    else -> throw Exception("colour $this is unsupported")
-}
+enum class Colour { RED, GREEN, BLUE }
 
 fun main() {
     println(sumIdsOfValidGames(File("src/main/resources/day_2_input.txt"))) // 2795
