@@ -4,27 +4,26 @@ import kotlin.math.pow
 class Day4(file: File) {
     private val input = file.readLines()
 
-    fun part1(): Int = input.sumOf { 2.0.pow(countMatches(it) - 1).toInt() }
+    fun part1() = input.sumOf { card -> 2.0.pow(card.countMatches() - 1).toInt() }
 
     fun part2(): Int {
-        val cardsWon = mutableMapOf<Int, Int>()
-        for (i in 1..input.size) {
-            cardsWon[i] = 1
-        }
+        val cardsWon = mutableMapOf<Int, Int>().apply { putAll(input.indices.map { it to 1 }) }
+
         input.forEachIndexed { index, card ->
-            val matches = countMatches(card)
-            repeat(cardsWon[index + 1]!!) {
-                for (i in 1..matches) {
-                    if (cardsWon[index + 1] != null) cardsWon[index + 1 + i] = cardsWon[index + 1 + i]!!.plus(1)
+            val matches = card.countMatches()
+            1.rangeTo(matches).forEach {
+                val cardNumber = index + it
+                if (cardsWon.containsKey(cardNumber)) {
+                    cardsWon[cardNumber] = cardsWon[cardNumber]!!.plus(cardsWon[index]!!)
                 }
             }
         }
         return cardsWon.values.sum()
     }
 
-    private fun countMatches(card: String): Int {
-        val winningNumbers = card.split(":", "|")[1].split(" ").filter { it.isNotBlank() }
-        val myNumbers = card.split(":", "|")[2].split(" ").filter { it.isNotBlank() }
+    private fun String.countMatches(): Int {
+        val winningNumbers = this.split(":", "|")[1].split(" ").filter { it.isNotBlank() }
+        val myNumbers = this.split(":", "|")[2].split(" ").filter { it.isNotBlank() }
         return winningNumbers.count { myNumbers.contains(it) }
     }
 }
