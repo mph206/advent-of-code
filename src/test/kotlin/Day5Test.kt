@@ -9,8 +9,8 @@ class Day5Test {
         assertEquals(35L, calculator.part1())
     }
 
-//    @Test
-//    fun ``() {
-//        assertEquals(30, calculator.part2())
-//    }
+    @Test
+    fun `Findes lowest location for seed range`() {
+        assertEquals(46L, calculator.part2())
+    }
 }

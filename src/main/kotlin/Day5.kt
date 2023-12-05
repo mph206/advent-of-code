@@ -11,13 +11,17 @@ class Day5(file: File) {
         val row = input.subList(sectionStart + 1, input.size).takeWhile { it.isNotBlank() }
         var value: Long? = null
 
-        row.forEach { line ->
-            val (dest, start, range) = line.split(" ").mapNotNull { it.toLongOrNull() }
-            if (start < sourceValue && start + range >= sourceValue) {
-                value = sourceValue + dest - start
+        run breaking@{
+            row.forEach { line ->
+                val (destinationStart, sourceStart, range) = line.split(" ").mapNotNull { it.toLongOrNull() }
+                if (sourceValue in (sourceStart..sourceStart + range)) {
+                    value = destinationStart + sourceValue - sourceStart
+                    return@breaking
+                }
             }
         }
-        return Pair(first = destinationName, second = value ?: sourceValue)
+        val returny = Pair(first = destinationName, second = value ?: sourceValue)
+        return returny
     }
 
     fun part1(): Long {
@@ -34,13 +38,28 @@ class Day5(file: File) {
         return locations.minOrNull() ?: throw Exception("No minimum found")
     }
 
-    fun part2(): Int {
-        return 1
+    fun part2(): Long {
+        val seeds = input.first().substring(7).split(" ").mapNotNull { it.toLongOrNull() }
+        val allSeeds = seeds.flatMapIndexed { index, number ->
+            if (index % 2 == 0) {
+                number.until(number + seeds[index + 1])
+            } else emptyList()
+        }
+        val locations = allSeeds.map { seed ->
+            var (destinationName, destinationValue) = findDestinationNameAndValue("seed", seed)
+            while (destinationName != null) {
+                val output = findDestinationNameAndValue(destinationName, destinationValue)
+                destinationName = output.first
+                destinationValue = output.second
+            }
+            destinationValue
+        }
+        return locations.minOrNull() ?: throw Exception("No minimum found")
     }
 }
 
 fun main() {
     val calculator = Day5(File("src/main/resources/day_5_input.txt"))
-    println(calculator.part1()) // 196167384
+//    println(calculator.part1()) // 196167384
     println(calculator.part2()) //
 }
