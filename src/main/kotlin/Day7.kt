@@ -3,31 +3,48 @@ import java.io.File
 class Day7(file: File) {
     private val input = file.readLines()
 
-    fun part1(): Int {
-        val sortedByType = input.map { line ->
+    fun part1(): Int = calculateHandScores(withJoker = false)
+
+    fun part2(): Int = calculateHandScores(withJoker = true)
+
+    private fun calculateHandScores(withJoker: Boolean) =
+        input.map { line ->
             val (cards, bid) = line.split(" ").let { Pair(it[0], it[1].toInt()) }
-            val uniqueCards = cards.toSet()
-            val handType = when {
-                uniqueCards.size == 1 -> HandType.FiveOfKind
-                cards.any { card -> cards.count { it == card } == 4 } -> HandType.FourOfKind
-                cards.any { card -> cards.count { it == card } == 3 } && uniqueCards.size == 2 -> HandType.FullHouse
-                cards.any { card -> cards.count { it == card } == 3 } -> HandType.ThreeOfKind
-                uniqueCards.size == 3 -> HandType.TwoPair
-                uniqueCards.size == 4 -> HandType.OnePair
-                else -> HandType.HighCard
-            }
-            val cardValues = cards.map { cardValues[it] }.toString()
+            val handType = if (withJoker) categoriseHandWithJokers(cards) else categoriseHand(cards)
+            val cardValues = cards.map { it.getCardValue(withJoker) }.toString()
             Hand(cards, handType, bid, cardValues)
-        }.sortedBy { it }
+        }
+            .sortedBy { it }
+            .mapIndexed { index, hand -> (index + 1) * hand.bid }
+            .sum()
 
-        return sortedByType.mapIndexed { index, hand -> (index + 1) * hand.bid }.sum()
+    private fun categoriseHand(cards: String) =
+        cards.groupBy { it }.map { it.value.size }.sortedDescending().getHandType()
+
+    private fun categoriseHandWithJokers(cards: String): HandType {
+        val jokerCount = cards.count { it == 'J' }
+        val cardCounts = cards.filter { it != 'J' }.groupBy { it }.map { it.value.size }.toMutableList()
+        val maxNonJokerCount = cardCounts.maxOfOrNull { it } ?: 0
+        if (jokerCount > 0 && jokerCount != 5) {
+            cardCounts[cardCounts.indexOfFirst { it == maxNonJokerCount }] += jokerCount
+        } else if (jokerCount == 5) {
+            cardCounts.add(jokerCount)
+        }
+        cardCounts.sortDescending()
+        return cardCounts.getHandType()
     }
 
-    fun part2(): Int {
-        return 1
+    private fun List<Int>.getHandType() = when (this) {
+        listOf(5) -> HandType.FiveOfKind
+        listOf(4, 1) -> HandType.FourOfKind
+        listOf(3, 2) -> HandType.FullHouse
+        listOf(3, 1, 1) -> HandType.ThreeOfKind
+        listOf(2, 2, 1) -> HandType.TwoPair
+        listOf(2, 1, 1, 1) -> HandType.OnePair
+        else -> HandType.HighCard
     }
 
-    val cardValues = mapOf(
+    private fun Char.getCardValue(withJoker: Boolean) = mutableMapOf(
         '2' to 'a',
         '3' to 'b',
         '4' to 'c',
@@ -41,33 +58,23 @@ class Day7(file: File) {
         'Q' to 'k',
         'K' to 'l',
         'A' to 'm',
-    )
+    ).apply { if (withJoker) this['J'] = '*' }.toMap()[this]
 }
 
-data class Hand(val hand: String, val handType: HandType, val bid: Int, val cardValues: String): Comparable<Hand> {
+data class Hand(val hand: String, val handType: HandType, val bid: Int, val cardValues: String) : Comparable<Hand> {
     override fun compareTo(other: Hand): Int = when {
-        this.handType != other.handType -> this.handType.value compareTo other.handType.value
+        this.handType != other.handType -> this.handType.ordinal compareTo other.handType.ordinal
         this.cardValues != other.cardValues -> this.cardValues compareTo other.cardValues
         else -> 0
     }
 }
 
 enum class HandType {
-    FiveOfKind, FourOfKind, FullHouse, ThreeOfKind, TwoPair, OnePair, HighCard;
-
-    val value get() = when (this) {
-        FiveOfKind -> 7
-        FourOfKind -> 6
-        FullHouse -> 5
-        ThreeOfKind -> 4
-        TwoPair -> 3
-        OnePair -> 2
-        HighCard -> 1
-    }
+    HighCard, OnePair, TwoPair, ThreeOfKind, FullHouse, FourOfKind, FiveOfKind;
 }
 
 fun main() {
     val calculator = Day7(File("src/main/resources/day_7_input.txt"))
     println(calculator.part1()) // 247815719
-    println(calculator.part2()) //
+    println(calculator.part2()) // 248747492
 }
