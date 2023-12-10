@@ -32,7 +32,8 @@ class Day5(file: File) {
                 destinationName = output.first
                 destinationRanges = output.second
             }
-            minSeedValue = min(destinationRanges.minOf { it.first }, minSeedValue ?: destinationRanges.minOf { it.first })
+            minSeedValue =
+                min(destinationRanges.minOf { it.first }, minSeedValue ?: destinationRanges.minOf { it.first })
             println("$range done!")
         }
         return minSeedValue ?: throw Exception("No minimum found")
@@ -57,7 +58,10 @@ class Day5(file: File) {
         return Pair(first = destinationName, second = value ?: sourceValue)
     }
 
-    private fun findDestinationNameAndValue(sourceName: String, sourceRanges: List<LongRange>): Pair<String?, List<LongRange>> {
+    private fun findDestinationNameAndValue(
+        sourceName: String,
+        sourceRanges: List<LongRange>,
+    ): Pair<String?, List<LongRange>> {
         val sectionStart = input.indexOfFirst { it.startsWith("$sourceName-to") }
         if (sectionStart < 0) return Pair(null, sourceRanges)
         val row = input.subList(sectionStart + 1, input.size).takeWhile { it.isNotBlank() }
@@ -70,29 +74,26 @@ class Day5(file: File) {
                 row.forEach { line ->
                     val (destinationStart, sourceStart, range) = line.split(" ").mapNotNull { it.toLongOrNull() }
                     val destinationRange = sourceStart..sourceStart + range
-                    val missingItems = processingRange.subtract(destinationRange)
-                    val missingRangeStart = if (processingRange.first < destinationRange.first) processingRange.first else 0
-                    val missingRangeEnd = if (processingRange.last < destinationRange.first) processingRange.last else destinationRange.first
-                    val missingRangeStart2 = if (processingRange.first > destinationRange.last) processingRange.first else destinationRange.last
-                    val missingRangeEnd2 = if (missingRangeStart2 != 0L) processingRange.last else 0
-//                    if (missingRangeStart < missingRangeEnd)
+                    val missingRanges = getMissingRanges(processingRange, destinationRange)
+                    val missingRangesSize = missingRanges.sumOf { it.last - it.first + 1 }
                     val diff = destinationStart - sourceStart
                     when {
-                        (missingItems.isEmpty()) -> {
+                        (missingRanges.isEmpty()) -> {
                             // all of source range is in destination range
                             val shiftedRange = (processingRange.first + diff)..(processingRange.last + diff)
                             outputRanges.add(shiftedRange)
                             toProcess.remove(processingRange)
                             return@findDestinationValue
                         }
-                        missingItems.size != processingRange.count() -> {
+                        missingRangesSize != processingRange.count().toLong() -> {
                             // some of start range is in destination range
-                            // TODO make the overlap more efficient as sets are too much calculation
-                            val overlap = processingRange.intersect(destinationRange)
-                            val shiftedRange = (overlap.first() + diff)..(overlap.last() + diff)
-                            outputRanges.add(shiftedRange)
-                            toProcess.remove(processingRange)
-                            toProcess.add(missingItems.first()..missingItems.last())
+                            missingRanges.forEach { missingRange ->
+                                val overlap = getOverlap(processingRange, destinationRange)
+                                val shiftedRange = (overlap.first + diff)..(overlap.last + diff)
+                                outputRanges.add(shiftedRange)
+                                toProcess.remove(processingRange)
+                                toProcess.add(missingRange.first..missingRange.last)
+                            }
                             return@findDestinationValue
                         }
                     }
@@ -105,10 +106,39 @@ class Day5(file: File) {
         val destinationName = input[sectionStart].split("$sourceName-to-", " ")[1]
         return Pair(destinationName, outputRanges)
     }
+
+    private fun getMissingRanges(processingRange: LongRange, destinationRange: LongRange): List<LongRange> {
+        val missingRangeStart = if (processingRange.first < destinationRange.first) processingRange.first else null
+        val missingRangeEnd =
+            if (processingRange.last < destinationRange.first) processingRange.last else destinationRange.first - 1
+        val missingRangeStart2 =
+            if (processingRange.first < destinationRange.last) destinationRange.last + 1 else processingRange.first
+        val missingRangeEnd2 = if (processingRange.last > destinationRange.last) processingRange.last else null
+        val missingRanges = mutableListOf<LongRange>()
+        if (missingRangeStart != null) {
+            missingRanges.add(missingRangeStart..missingRangeEnd)
+        }
+        if (missingRangeEnd2 != null) {
+            missingRanges.add(missingRangeStart2..missingRangeEnd2)
+        }
+        return missingRanges
+    }
+
+    private fun getOverlap(processingRange: LongRange, destinationRange: LongRange): LongRange {
+        val overlapStart = when {
+            destinationRange.first > processingRange.first -> destinationRange.first
+            else -> processingRange.first
+        }
+        val overlapEnd = when {
+            destinationRange.last < processingRange.last -> destinationRange.last
+            else -> processingRange.last
+        }
+        return overlapStart..overlapEnd
+    }
 }
 
 fun main() {
     val calculator = Day5(File("src/main/resources/day_5_input.txt"))
     println(calculator.part1()) // 196167384
-    println(calculator.part2()) //
+    println(calculator.part2()) // 125742457 is too high
 }

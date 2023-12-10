@@ -15,8 +15,9 @@ class Day8Test {
         assertEquals(6, calculator.part1())
     }
 
-//    @Test
-//    fun `Multiply winning scenarios for single big race`() {
-//        assertEquals(71503, calculator.part2())
-//    }
+    @Test
+    fun `part2`() {
+        val calculator = Day8(File("src/test/resources/day_8_test_input(3).txt"))
+        assertEquals(6, calculator.part2())
+    }
 }
