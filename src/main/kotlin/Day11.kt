@@ -4,30 +4,28 @@ import kotlin.math.abs
 class Day11(file: File) {
     private val input = file.readLines()
 
-    fun part1(): Int =
+    fun sumDistancesBetweenChars(expansionFactor: Int, char: Char): Long =
         input
-            .duplicateEmptyRowsAndColumns()
-            .findCharacterCoordinates('#')
+            .findCharacterCoordinates(char)
+            .offsetCoordinatesByExpansionFactor((expansionFactor))
             .buildPairs()
             .findDistances()
             .sum()
 
-    fun part2(): Int {
-        return 1
-    }
-
-    private fun List<String>.duplicateEmptyRowsAndColumns(): List<String> {
-        val mutableInput = this.map { it.toMutableList() }.toMutableList()
-        val emptyRows = this.mapIndexedNotNull { index, row -> if (!row.contains('#')) index else null }
-            .mapIndexed { index, i -> i + index }
-        val emptyColumns = this.first().mapIndexedNotNull { index, _ ->
-            val column = this.map { it[index] }
+    private fun List<Coordinate>.offsetCoordinatesByExpansionFactor(expansionFactor: Int): List<Coordinate> {
+        val emptyRows = input.mapIndexedNotNull { index, row -> if (!row.contains('#')) index else null }
+        val emptyColumns = input.first().mapIndexedNotNull { index, _ ->
+            val column = input.map { it[index] }
             if (!column.contains('#')) index else null
-        }.mapIndexed { index, i -> i + index }
-        val rowLength = this.first().length
-        emptyRows.forEach { mutableInput.add(it, MutableList(rowLength) { '.' }) }
-        emptyColumns.forEach { mutableInput.forEach { row -> row.add(it, '.') } }
-        return mutableInput.map { it.joinToString("") }
+        }
+        return this.map { coordinate ->
+            val previousRowCount = emptyRows.count { it < coordinate.y }
+            val previousColumnCount = emptyColumns.count { it < coordinate.x }
+            Coordinate(
+                coordinate.y + previousRowCount * (expansionFactor - 1).coerceAtLeast(0),
+                coordinate.x + previousColumnCount * (expansionFactor - 1).coerceAtLeast(0)
+            )
+        }
     }
 
     private fun List<String>.findCharacterCoordinates(character: Char): List<Coordinate> =
@@ -44,15 +42,15 @@ class Day11(file: File) {
             }
         }
 
-    private fun List<Pair<Coordinate, Coordinate>>.findDistances(): List<Int> =
+    private fun List<Pair<Coordinate, Coordinate>>.findDistances(): List<Long> =
         this.map {
-            (abs(it.second.y - it.first.y) + abs(it.second.x - it.first.x))
+            (abs(it.second.y - it.first.y) + abs(it.second.x - it.first.x)).toLong()
         }
 }
 
 
 fun main() {
     val calculator = Day11(File("src/main/resources/day_11_input.txt"))
-    println(calculator.part1()) // 9214785
-    println(calculator.part2()) //
+    println(calculator.sumDistancesBetweenChars(2, '#')) // 9214785
+    println(calculator.sumDistancesBetweenChars(1000000, '#')) // 613686987427
 }
