@@ -6,13 +6,13 @@ class Day8Test {
     @Test
     fun `1st`() {
         val calculator = Day8(File("src/test/resources/day_8_test_input(1).txt"))
-        assertEquals(2, calculator.part1())
+        assertEquals(2, calculator.part2())
     }
 
     @Test
-    fun `Multiply winning scenarios for multiple races`() {
+    fun `part 1 - example 2`() {
         val calculator = Day8(File("src/test/resources/day_8_test_input(2).txt"))
-        assertEquals(6, calculator.part1())
+        assertEquals(6, calculator.part2())
     }
 
     @Test
