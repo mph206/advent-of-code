@@ -1,3 +1,4 @@
+import com.google.common.base.Stopwatch
 import java.io.File
 import java.lang.Long.min
 
@@ -21,9 +22,9 @@ class Day5(file: File) {
     fun part2(): Long {
         val seeds = input.first().substring(7).split(" ").mapNotNull { it.toLongOrNull() }
         var minSeedValue: Long? = null
-        val seedRanges = seeds.mapIndexed { index, number ->
+        val seedRanges = seeds.mapIndexedNotNull { index, number ->
             if (index % 2 == 0) number.until(number + seeds[index + 1]) else null
-        }.filterNotNull()
+        }
 
         seedRanges.forEach { range ->
             var (destinationName, destinationRanges) = findDestinationNameAndValue("seed", listOf(range))
@@ -62,11 +63,14 @@ class Day5(file: File) {
         sourceName: String,
         sourceRanges: List<LongRange>,
     ): Pair<String?, List<LongRange>> {
+        val stopwatch = Stopwatch.createStarted()
+
         val sectionStart = input.indexOfFirst { it.startsWith("$sourceName-to") }
         if (sectionStart < 0) return Pair(null, sourceRanges)
         val row = input.subList(sectionStart + 1, input.size).takeWhile { it.isNotBlank() }
         val outputRanges: MutableList<LongRange> = mutableListOf()
         val toProcess = sourceRanges.toMutableList()
+        println("parsedInput in ${stopwatch.elapsed()}")
 
         while (toProcess.isNotEmpty()) {
             run findDestinationValue@{
@@ -75,6 +79,7 @@ class Day5(file: File) {
                     val (destinationStart, sourceStart, range) = line.split(" ").mapNotNull { it.toLongOrNull() }
                     val destinationRange = sourceStart..sourceStart + range
                     val missingRanges = getMissingRanges(processingRange, destinationRange)
+                    println("Got missing ranges in ${stopwatch.elapsed()}")
                     val missingRangesSize = missingRanges.sumOf { it.last - it.first + 1 }
                     val diff = destinationStart - sourceStart
                     when {
@@ -92,15 +97,17 @@ class Day5(file: File) {
                                 val shiftedRange = (overlap.first + diff)..(overlap.last + diff)
                                 outputRanges.add(shiftedRange)
                                 toProcess.remove(processingRange)
-                                toProcess.add(missingRange.first..missingRange.last)
+                                toProcess.add(missingRange)
                             }
                             return@findDestinationValue
                         }
                     }
+                println("Finished row in ${stopwatch.elapsed()}")
                 }
                 // not found in destination range
                 outputRanges.add(processingRange)
                 toProcess.remove(processingRange)
+                println("Found destination value: ${stopwatch.elapsed()}")
             }
         }
         val destinationName = input[sectionStart].split("$sourceName-to-", " ")[1]
