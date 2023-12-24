@@ -16,7 +16,7 @@ class Day8Test {
     }
 
     @Test
-    fun `part2`() {
+    fun `part 2`() {
         val calculator = Day8(File("src/test/resources/day_8_test_input(3).txt"))
         assertEquals(6, calculator.part2())
     }
