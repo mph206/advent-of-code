@@ -1,2 +1,63 @@
+# Node.js dependencies
+node_modules/
+
+# TypeScript build output
+/dist/
+/build/
+/out/
+/*.js
+/*.d.ts
+
+# Puzzle input
+/2024/**/*_input.txt
+
+# npm package-lock files
+/package-lock.json
+/yarn.lock
+/pnpm-lock.yaml
+
+# Optionaly ignore yarn.lock or package-lock.json if using pnpm or other package manager
+# .yarn-integrity
+# .yarn/cache/
+
+# IDE & Editor directories
+.vscode/
 .idea/
-build/
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# log files
+*.log
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# TypeScript compiler cache
+*.tsbuildinfo
+
+# SASS/SCSS cache
+.sass-cache/
+
+# Jest test coverage
+/coverage/
+
+# Docker files
+docker-compose.override.yml
+Dockerfile
+Dockerfile.dev
+
+# Temporary files
+*.swp
+*~
+
+# Dependency directories
+/.pnpm
+/.cache
+/.next
+
+# Debugging files
+*.launch.json
