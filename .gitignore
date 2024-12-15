@@ -9,7 +9,7 @@ node_modules/
 /*.d.ts
 
 # Puzzle input
-/2024/*/*_input.txt
+*.txt
 
 # npm package-lock files
 /package-lock.json
