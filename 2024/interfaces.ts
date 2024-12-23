@@ -7,7 +7,7 @@ class Coordinate {
       this.y = y;
     }
 
-    combine(other: Coordinate): Coordinate {
+  combine(other: Coordinate): Coordinate {
       return new Coordinate(this.x + other.x, this.y + other.y);
     }
 
@@ -16,11 +16,25 @@ class Coordinate {
     }
 }
 
+class DirectedCoordinate extends Coordinate {
+  direction: Direction;
+
+  constructor(x: number, y: number, direction: Direction) {
+    super(x, y);
+    this.direction = direction;
+  }
+
+  combineWithDirection(other: DirectedCoordinate, direction: Direction): DirectedCoordinate {
+    return new DirectedCoordinate(this.x + other.x, this.y + other.y, direction);
+  }
+}
+
 enum Direction {
   UP, RIGHT, DOWN, LEFT
 }
 
 export {
   Direction,
+  DirectedCoordinate,
   Coordinate
 }
