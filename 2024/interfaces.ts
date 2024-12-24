@@ -7,7 +7,7 @@ class Coordinate {
       this.y = y;
     }
 
-  combine(other: Coordinate): Coordinate {
+    combine(other: Coordinate): Coordinate {
       return new Coordinate(this.x + other.x, this.y + other.y);
     }
 
@@ -26,6 +26,18 @@ class DirectedCoordinate extends Coordinate {
 
   combineWithDirection(other: DirectedCoordinate, direction: Direction): DirectedCoordinate {
     return new DirectedCoordinate(this.x + other.x, this.y + other.y, direction);
+  }
+
+  sharesCoordinatesWith(other: DirectedCoordinate) {
+    return this.x === other.x && this.y === other.y;
+  }
+
+  equals(other: DirectedCoordinate) {
+    return this.x === other.x && this.y === other.y && this.direction === other.direction;
+  }
+
+  toFullString(): string {
+    return `{x: ${this.x}, y: ${this.y}, direction: ${this.direction}}`
   }
 }
 
