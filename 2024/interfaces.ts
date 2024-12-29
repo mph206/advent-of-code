@@ -7,8 +7,16 @@ class Coordinate {
       this.y = y;
     }
 
-    combine(other: Coordinate): Coordinate {
+    add(other: Coordinate): Coordinate {
       return new Coordinate(this.x + other.x, this.y + other.y);
+    }
+
+    subtract(other: Coordinate): Coordinate {
+      return new Coordinate(this.x - other.x, this.y - other.y);
+    }
+
+    equals(other: Coordinate) {
+      return this.x === other.x && this.y === other.y;
     }
 
     toString(): string {
@@ -32,7 +40,7 @@ class DirectedCoordinate extends Coordinate {
     return this.x === other.x && this.y === other.y;
   }
 
-  equals(other: DirectedCoordinate) {
+  override equals(other: DirectedCoordinate) {
     return this.x === other.x && this.y === other.y && this.direction === other.direction;
   }
 
