@@ -25,12 +25,12 @@ function reorganiseHardDriveByBlock(input: string[]): string[] {
             organisedDrive.splice(organisedDrive.indexOf("."), 1, lastChar);
         }
     }
-
     return organisedDrive;
 }
 
 function reorganiseHardDriveByFile(input: string[]): string[] {
     const organisedDrive = [...input];
+
     let currentKey = Number(organisedDrive[organisedDrive.length - 1]);
     while (currentKey >= 0) {
         const keyStart = organisedDrive.indexOf(currentKey.toString());
@@ -39,23 +39,24 @@ function reorganiseHardDriveByFile(input: string[]): string[] {
         
         const firstAvailableSpace = organisedDrive.slice(0, keyStart).findIndex((_, index) => organisedDrive.slice(index, index + fileLength).every(item => item === "."));
         if (firstAvailableSpace !== -1 && firstAvailableSpace < keyStart) {
-            organisedDrive.splice(firstAvailableSpace, fileLength, ...currentKey.toString().repeat(fileLength).split(""))
-            organisedDrive.splice(keyStart, fileLength, ...".".toString().repeat(fileLength).split(""));
+            organisedDrive.splice(firstAvailableSpace, fileLength, ...Array(fileLength).keys().map(_ => currentKey.toString()))
+            organisedDrive.splice(keyStart, fileLength, ...Array(fileLength).keys().map(_ => "."));
         }
         currentKey--;
     }
-
     return organisedDrive;
 }
 
 function calculateChecksum(input: string[]): number {
-    return input.map((value, index) => {
-        return value !== "." ? Number(value) * index : 0;
-    }).reduce((prev, curr) => prev + curr);
+    return input
+            .map((value, index) => {
+                return value !== "." ? Number(value) * index : 0
+            })
+            .reduce((prev, curr) => prev + curr);
 }
 
 console.log(reorganiseDrive(parseFile("day_9/input.txt"), (input) => reorganiseHardDriveByBlock(input))); // 6283170117911
-console.log(reorganiseDrive(parseFile("day_9/input.txt"), (input) => reorganiseHardDriveByFile(input))); // 21196240522055 is too high
+console.log(reorganiseDrive(parseFile("day_9/input.txt"), (input) => reorganiseHardDriveByFile(input))); // 6307653242596
 
 export {
     reorganiseDrive
