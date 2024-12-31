@@ -3,7 +3,7 @@ import { stringToGrid, parseFile } from '../utils.ts';
 
 type ScoringFunction = (adjacencyList: Map<string, Coordinate[]>, start: Coordinate, grid: string[][]) => number;
 
-function partOne(input: string, scoringFunction: ScoringFunction): number {
+function scoreTrailheads(input: string, scoringFunction: ScoringFunction): number {
     const grid = stringToGrid(input);
     const nineSquareLocations = findStartCoordinates(grid);
     const adjacencyList = buildAdjacencyList(grid);
@@ -64,7 +64,7 @@ function countNinesVisited(adjacencyList: Map<string, Coordinate[]>, start: Coor
 }
 
 function countPossiblePaths(adjacencyList: Map<string, Coordinate[]>, start: Coordinate, grid: string[][]): number {
-    return dfs2(adjacencyList, start)
+    return dfs(adjacencyList, start)
         .filter(coord => grid[coord.y][coord.x] !== undefined && grid[coord.y][coord.x] === '9')
         .length
 }
@@ -74,27 +74,7 @@ function dfs(adjacencyList: Map<string, Coordinate[]>, start: Coordinate): Coord
     const visited = new Set();
     const result = [];
 
-    while (stack.length) {
-        const vertex = stack.pop();
-
-        if (vertex !== undefined && !visited.has(vertex)) {
-            visited.add(vertex);
-            result.push(vertex);
-
-            for (const neighbor of adjacencyList.get(vertex.toString())!) {
-                stack.push(neighbor);
-            }
-        }
-    }
-
-    return result;
-}
-
-function dfs2(adjacencyList: Map<string, Coordinate[]>, start: Coordinate): Coordinate[] {
-    const stack = [start];
-    const visited = new Set();
-    const result = [];
-
+    // Usually DFS doesn't re-visit visited vertexes, but we do here because we want to find all paths in part 2
     while (stack.length) {
         const vertex = stack.pop();
 
@@ -111,9 +91,9 @@ function dfs2(adjacencyList: Map<string, Coordinate[]>, start: Coordinate): Coor
     return result;
 }
 
-console.log(partOne(parseFile("day_10/input.txt"), (adjacencyList, start, grid) => countNinesVisited(adjacencyList, start, grid))); // 472
-console.log(partOne(parseFile("day_10/input.txt"), (adjacencyList, start, grid) => countPossiblePaths(adjacencyList, start, grid))); // 
+console.log(scoreTrailheads(parseFile("day_10/input.txt"), (adjacencyList, start, grid) => countNinesVisited(adjacencyList, start, grid))); // 472
+console.log(scoreTrailheads(parseFile("day_10/input.txt"), (adjacencyList, start, grid) => countPossiblePaths(adjacencyList, start, grid))); // 969
 
 export {
-    partOne
+    scoreTrailheads
 }
