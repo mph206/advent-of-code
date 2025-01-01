@@ -3,8 +3,8 @@ import { parseFile } from '../utils.ts';
 function transformStones(input: string, blinks: number): number {
     let stoneMap = new Map<number, number>();
     input.split(" ").forEach(it => {
-        const currentValue = stoneMap.get(Number(it));
-        stoneMap.set(Number(it), currentValue ? currentValue + 1 : 1);
+        const currentCount = stoneMap.get(Number(it));
+        stoneMap.set(Number(it), currentCount ? currentCount + 1 : 1);
     });
     for (let i = 0; i < blinks; i++) {
         stoneMap = performBlink(stoneMap)
@@ -24,11 +24,11 @@ function performBlink(stoneMap: Map<number, number>): Map<number, number> {
             const stoneOne = Number(stoneString.slice(0, midwayPoint));
             const stoneTwo = Number(stoneString.slice(midwayPoint)); // trim leading 0s
 
-            const stoneOneValue = newStoneMap.get(stoneOne);
-            newStoneMap.set(stoneOne, stoneOneValue ? stoneOneValue + count : count);
+            const stoneOneCount = newStoneMap.get(stoneOne);
+            newStoneMap.set(stoneOne, stoneOneCount ? stoneOneCount + count : count);
 
-            const stoneTwoValue = newStoneMap.get(stoneTwo);
-            newStoneMap.set(stoneTwo, stoneTwoValue ? stoneTwoValue + count : count);
+            const stoneTwoCount = newStoneMap.get(stoneTwo);
+            newStoneMap.set(stoneTwo, stoneTwoCount ? stoneTwoCount + count : count);
         } else {
             const newValue = stone * 2024;
             const existingCount = newStoneMap.get(newValue);
