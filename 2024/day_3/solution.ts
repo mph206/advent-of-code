@@ -1,4 +1,4 @@
-import { parseFile } from '../utils.ts';
+import { parseFile } from '../utils/file_parsing.ts';
 
 function partOne (input: string): number {
     const intermediate = parseFile(input)

@@ -1,5 +1,5 @@
-import { DirectedCoordinate, Direction } from "../interfaces.ts";
-import { parseFile } from '../utils.ts';
+import { DirectedCoordinate, Direction } from "../utils/interfaces.ts";
+import { parseFile } from '../utils/file_parsing.ts';
 
 const directionMap: Map<Direction, DirectedCoordinate> = new Map([
     [Direction.UP, new DirectedCoordinate(0, -1, Direction.RIGHT)],
@@ -33,30 +33,23 @@ function partTwo(input: string): number {
     const positions = findPositions(input);
     const loopBlockPositions = new Array<DirectedCoordinate>();
 
-    for (let i = 0; i < positions.length; i++) {
-        // Doesn't account for where obstacle occurs right after turning
+    for (let i = 0; i < positions.length - 1; i++) {
         const originalPosition = positions[i];
         const grid = parseInput(input);
 
-        let currentPosition = new DirectedCoordinate(originalPosition.x,  originalPosition.y, originalPosition.direction);
+        let currentPosition = new DirectedCoordinate(originalPosition.x, originalPosition.y, originalPosition.direction);
 
-        if (!nextPositionIsInBounds(currentPosition, grid)) {
-            break;
-        }
-        const positionAfterBlockAdded = findNextPosition(currentPosition, grid, true);
         const obstacle = findNextPosition(currentPosition, grid)
+        grid[obstacle.y].splice(obstacle.x, 1, '#')
         const newPositions = new Map<string, number>([
             [currentPosition.toFullString(), 1], 
-            [positionAfterBlockAdded.toFullString(), 1]
         ]);
-        currentPosition = positionAfterBlockAdded;
 
         while (nextPositionIsInBounds(currentPosition, grid)) {
-            currentPosition = findNextPosition(currentPosition, grid, false, obstacle);
-            const currentKey = newPositions.get(currentPosition.toFullString());
-            // Below can get stuck as sometimes the first element in the array 
-            const loopsBackToStart = currentKey !== undefined && currentKey > 0;
-            newPositions.set(currentPosition.toFullString(), (currentKey ?? 0) + 1);
+            currentPosition = findNextPosition(currentPosition, grid);
+            const coordVisitCount = newPositions.get(currentPosition.toFullString());
+            const loopsBackToStart = coordVisitCount !== undefined && coordVisitCount > 0;
+            newPositions.set(currentPosition.toFullString(), (coordVisitCount ?? 0) + 1);
             
             if (loopsBackToStart) {
                 const blockInAlreadyTraversedPath = positions.slice(0, i).map(it => it.toString()).includes(obstacle.toString());
@@ -67,29 +60,20 @@ function partTwo(input: string): number {
             }
         }
     }
-    const duplicates = loopBlockPositions.map(position => position.toString()).filter((e, i, a) => a.indexOf(e) !== i)
 
     return new Set(loopBlockPositions.map(position => position.toString())).size;
 }
 
 function parseInput(input: string): string[][] {
-    return parseFile(input).split("\n").map(line => line.split(""));
+    return input.split("\n").map(line => line.trim().split(""));
 }
 
-function findNextPosition(currentPosition: DirectedCoordinate, grid: string[][], forceRotate = false, obstacle: DirectedCoordinate | undefined = undefined): DirectedCoordinate {
+function findNextPosition(currentPosition: DirectedCoordinate, grid: string[][]): DirectedCoordinate {
     const nextCoordInSameDirection = currentPosition.combineWithDirection(directionMap.get(currentPosition.direction)!, currentPosition.direction);
     
-    if (grid[nextCoordInSameDirection.y][nextCoordInSameDirection.x] === '#' || forceRotate) {
-        // check new coord isn't also a #
+    if (grid[nextCoordInSameDirection.y][nextCoordInSameDirection.x] === '#') {
         const newDirection = directionMap.get(currentPosition.direction)!.direction;
-        const newCoordinate = directionMap.get(newDirection)!;
-        let nextCoordInNewDirection = currentPosition.combineWithDirection(newCoordinate, newDirection);
-        while (grid[nextCoordInNewDirection.y][nextCoordInNewDirection.x] === '#' 
-            || (obstacle !== undefined && obstacle.sharesCoordinatesWith(nextCoordInNewDirection))) {
-            const newDirection = directionMap.get(nextCoordInNewDirection.direction)!.direction;
-            const newCoordinate = directionMap.get(newDirection)!;
-            nextCoordInNewDirection = currentPosition.combineWithDirection(newCoordinate, newDirection);
-        }
+        const nextCoordInNewDirection = currentPosition.changeDirection(newDirection);
         
         return nextCoordInNewDirection;
     }
@@ -101,8 +85,9 @@ function nextPositionIsInBounds(currentPosition: DirectedCoordinate, array: stri
     return !(nextPosition.x < 0 || nextPosition.y < 0 || nextPosition.y > array.length - 1 || nextPosition.x > array[0].length - 1);
 }
 
-// console.log(partOne("day_6/input.txt")); // 4826
-console.log(partTwo("day_6/input_test_3.txt")); 
-console.log(partTwo("day_6/input_test_2.txt")); 
-console.log(partTwo("day_6/input_test.txt")); 
-console.log(partTwo("day_6/input.txt")); // 1775 is too high, 1408 too low, not 1435, not 1614
+console.log(partOne(parseFile("day_6/input.txt"))); // 4826
+console.log(partTwo(parseFile("day_6/input.txt"))); // 1721
+
+export {
+    partTwo
+}

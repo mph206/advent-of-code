@@ -36,6 +36,11 @@ class DirectedCoordinate extends Coordinate {
     return new DirectedCoordinate(this.x + other.x, this.y + other.y, direction);
   }
 
+  changeDirection(newDirection: Direction): DirectedCoordinate {
+    this.direction = newDirection;
+    return this;
+  }
+
   sharesCoordinatesWith(other: DirectedCoordinate) {
     return this.x === other.x && this.y === other.y;
   }

@@ -1,4 +1,4 @@
-import { parseFile } from '../utils.ts';
+import { parseFile } from '../utils/file_parsing.ts';
 
 function parseInput (input: string): number[][] {
     return parseFile(input).split("\n").map(item => item.split(" ").map(string => Number(string)))

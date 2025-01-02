@@ -1,5 +1,5 @@
-import { Coordinate } from "../interfaces.ts";
-import { parseFile } from '../utils.ts';
+import { Coordinate } from "../utils/interfaces.ts";
+import { parseFile } from '../utils/file_parsing.ts';
 
 type stringSearchFunction = (searchString: string, coordinate: Coordinate, parsedInput: string[][]) => number;
 

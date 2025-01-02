@@ -1,4 +1,4 @@
-import { parseFile } from '../utils.ts';
+import { parseFile } from '../utils/file_parsing.ts';
 
 function reorganiseDrive(input: string, sortingFunction: (input: string[]) => string[]): number {
     const hardDriveRepresentation = convertBlocksToHardDriveRepresentation(input);

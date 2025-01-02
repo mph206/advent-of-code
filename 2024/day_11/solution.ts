@@ -1,4 +1,4 @@
-import { parseFile } from '../utils.ts';
+import { parseFile } from '../utils/file_parsing.ts';
 
 function transformStones(input: string, blinks: number): number {
     let stoneMap = new Map<number, number>();

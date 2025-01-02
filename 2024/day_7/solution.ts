@@ -1,4 +1,4 @@
-import { parseToLines } from '../utils.ts';
+import { parseToLines } from '../utils/file_parsing.ts';
 
 /* We can think of this problem as a graph
             81

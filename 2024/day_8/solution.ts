@@ -1,5 +1,5 @@
-import { parseFile, stringToGrid } from '../utils.ts';
-import { Coordinate } from '../interfaces.ts';
+import { parseFile, stringToGrid } from '../utils/file_parsing.ts';
+import { Coordinate } from '../utils/interfaces.ts';
 
 function findUniqueAntinodeLocations(input: string, extendAntinodePositions: boolean): number {
     const grid = stringToGrid(input);
