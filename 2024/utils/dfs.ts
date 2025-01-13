@@ -51,6 +51,7 @@ function dfs(adjacencyList: AdjacencyList, start: Coordinate, revisitVisitedCoor
 export {
     dfs, 
     buildAdjacencyList,
+    isInBounds
 }
 
 export type {

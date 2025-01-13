@@ -1,4 +1,3 @@
-// deno-lint-ignore-file no-case-declarations
 import { Coordinate } from "../utils/interfaces.ts";
 import { stringToGrid, parseFile } from "../utils/file_parsing.ts";
 import { buildAdjacencyList, dfs, AdjacencyList } from "../utils/dfs.ts";
@@ -43,117 +42,51 @@ function scoreRegions(regions: Coordinate[][], adjacencyList: AdjacencyList, gri
 
 const calculateRegionArea = (region: Coordinate[]) => region.length;
 
-function calculateRegionPerimeter(region: Coordinate[], adjacencyList: AdjacencyList, grid: string[][]): number {
+function calculateRegionPerimeter(region: Coordinate[], adjacencyList: AdjacencyList, _: string[][]): number {
     // Include all plot sides, then remove the sides that are joined to another plot
     return region.length * 4 - region.reduce((prev, curr) => prev + (adjacencyList.get(curr.toString()) ?? []).length, 0)
 }
 
-// Corners are equivalent to sides
-function calculateRegionSides(region: Coordinate[], adjacencyList: AdjacencyList, grid: string[][]): number {
-    const cornerMap = new Map<string,Set<number>>();
-    let duplicateCorners = 0;
-    const nonAdjacencyList = buildAdjacencyList(grid, isInvalidPath);
-    const corners = region.map(coord => {
-        const adjacentCoordsInRegion = adjacencyList.get(coord.toString()) ?? [];
-        const adjacentCoordsNotInRegion = nonAdjacencyList.get(coord.toString()) ?? [];
-        let cornerCount = 0;
-        
-        switch (adjacentCoordsInRegion.length) {
-            case 0:
-                cornerCount += 4;
-                break;
-            case 1:
-                cornerCount += 2;
-                break;
-            case 2:
-                const isParallel = adjacentCoordsInRegion[0].x == adjacentCoordsInRegion[1].x || adjacentCoordsInRegion[0].y == adjacentCoordsInRegion[1].y;
-                cornerCount += isParallel ? 0 : 1;
-                break;
-            default:
-                break;
+function calculateRegionSides(region: Coordinate[], _: AdjacencyList, grid: string[][]): number {
+    let topCount = 0;
+    let bottomCount = 0;
+    let leftCount = 0;
+    let rightCount = 0;
+
+    for (let i = 0; i < region.length; i++) {
+        const current = region[i];
+        const y = current.y;
+        const x = current.x;
+        const char = grid[y][x];
+
+        if ((grid[y - 1] === undefined || grid[y - 1][x] !== char) 
+            && (((grid[y][x - 1] ?? "false") !== char) || (grid [y - 1] !== undefined && ((grid[y - 1][x - 1] ?? "false") === char)))) {
+            topCount++;
         }
 
-        function findCornerPositions(outsideCoord: Coordinate, insideCoords: Array<Coordinate>): Set<number> {
-            const corners = new Set<number>();
-            const diffToEdge = new Map([
-                ["{x: 0, y: -1}", "TOP"],
-                ["{x: 0, y: 1}", "BOTTOM"],
-                ["{x: 1, y: 0}", "RIGHT"],
-                ["{x: -1, y: 0}", "LEFT"],
-            ]);
-            const edges = insideCoords
-                .map(insideCoord => insideCoord.subtract(outsideCoord))
-                .map(diff => diffToEdge.get(diff.toString())!);
-            const edgeToCorner = new Map([
-                [["LEFT", "TOP"], 1],
-                [["TOP", "RIGHT"], 2],
-                [["RIGHT", "BOTTOM"], 3],
-                [["BOTTOM", "LEFT"], 4]
-            ]);
-            edgeToCorner.forEach((value, key) => {
-                if (edges.some(edge => edge == key[0]) && edges.some(edge => edge == key[1])) {
-                    corners.add(value);
-                }
-            });
-            return corners;
+        if ((grid[y + 1] === undefined || grid[y + 1][x] !== char) 
+            && (((grid[y][x - 1] ?? "false") !== char) || (grid[y + 1] !== undefined && ((grid[y + 1][x - 1] ?? "false") === char)))) {
+            bottomCount++;
         }
 
-        // Find concave corners
-        adjacentCoordsNotInRegion.forEach((coordNotInRegion) => {
-            const insideCoords = (nonAdjacencyList.get(coordNotInRegion.toString()) ?? []).filter(it => region.some(regionCoord => regionCoord.x == it.x && regionCoord.y == it.y));
-
-            switch (insideCoords.length) {
-                case 2: 
-                case 3: 
-                    const positions = findCornerPositions(coordNotInRegion, insideCoords);
-                    if (positions.size > 0) {
-                        const values = positions.values();
-                        cornerMap.set(coordNotInRegion.toString(), new Set([...(cornerMap.get(coordNotInRegion.toString()) ?? new Set()), ...values]));
-                    }
-                    break;
-                case 4:
-                    cornerMap.set(coordNotInRegion.toString(), new Set([1, 2, 3, 4]));
-                    break;;
-                default: 
-                    break;
-            }
-        })
-
-        return cornerCount;
-    }).reduce((prev: number, curr: number) => prev + curr, 0);
-
-    // Filter out diagonal touching corners
-    region.forEach(coord => {
-        const thisCoordNonAdjacents = (nonAdjacencyList.get(coord.toString()) ?? [])
-            .sort((a, b) => a.y - b.y)
-            .sort((a, b) => a.x - b.x);;
-        if (thisCoordNonAdjacents.length === 2) {
-            if (region
-                .filter(regionCoord => !regionCoord.equals(coord))
-                .some(otherCoord => {
-                    const otherCoordNonAdjacents = (nonAdjacencyList.get(otherCoord.toString()) ?? [])
-                            .sort((a, b) => a.y - b.y)
-                            .sort((a, b) => a.x - b.x);
-                    if (otherCoordNonAdjacents.length === 2) {
-                        return otherCoordNonAdjacents.every((other, index) => thisCoordNonAdjacents[index].equals(other));
-                    };
-                    return false;
-                })) {
-                    duplicateCorners++;
-            }
+        if (((grid[y][x - 1] ?? "false") !== char) 
+            && (grid[y - 1] === undefined || ((grid[y - 1][x] ?? "false") !== char) || ((grid[y - 1][x - 1] ?? "false") === char))) {
+            leftCount++;
         }
-    });
-    
-    const concaveCorners = Array.from(cornerMap.values()).reduce((acc, curr) => acc + curr.size, 0);
-    return corners + concaveCorners - duplicateCorners;
+
+        if (((grid[y][x + 1] ?? "false") !== char) 
+            && (grid[y - 1] === undefined || ((grid[y - 1][x] ?? "false") !== char) || ((grid[y - 1][x + 1] ?? "false") === char))) {
+            rightCount++;
+        }
+    }
+
+    return topCount + bottomCount + leftCount + rightCount;
 }
 
 const isValidPath = (char: string, coord: Coordinate, grid: string[][]) => char === grid[coord.y][coord.x];
 
-const isInvalidPath = (char: string, coord: Coordinate, grid: string[][]) => char !== grid[coord.y][coord.x];
-
 console.log(partOne(parseFile("day_12/input.txt"), calculateRegionPerimeter)); // 1421958
-console.log(partOne(parseFile("day_12/input.txt"), calculateRegionSides)); // too high: 890808
+console.log(partOne(parseFile("day_12/input.txt"), calculateRegionSides)); // 885394
 
 export {
     partOne,
